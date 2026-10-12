@@ -135,7 +135,7 @@ HierarchicalNormal <- function(mean = NULL, std = NULL) {
 DiffLatentModel <- function(model, init = NULL) {
   model <- .as_prior_slot(model)
   init <- .as_prior_slot(init)
-  if (inherits(init, "julia_spec")) init <- list(init)
+  if (inherits(init, "julia_distribution")) init <- list(init)
   julia_spec("DiffLatentModel", model = model, init = init, .role = "latent")
 }
 

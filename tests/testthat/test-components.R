@@ -25,10 +25,16 @@ test_that("latent models accept distributions, lists and latent models", {
     as_julia(DiffLatentModel(AR(), init = Normal(0, 1))),
     "DiffLatentModel(; model = AR(), init = [Normal(0.0, 1.0)])"
   )
-  # One initial value per difference, whether or not it carries a role
+  # Julia takes a single prior as one difference, and refuses one inside a
+  # vector, so an `init` that is already a whole slot is left as written
   expect_identical(
-    as_julia(DiffLatentModel(AR(), init = julia_spec("Beta", 1, 1))),
-    "DiffLatentModel(; model = AR(), init = [Beta(1.0, 1.0)])"
+    as_julia(DiffLatentModel(AR(), init = RandomWalk())),
+    "DiffLatentModel(; model = AR(), init = RandomWalk())"
+  )
+  vector <- julia("[Normal(0, 1), Normal(0, 1)]")
+  expect_identical(
+    as_julia(DiffLatentModel(AR(), init = vector)),
+    "DiffLatentModel(; model = AR(), init = [Normal(0, 1), Normal(0, 1)])"
   )
   expect_identical(as_julia(FixedIntercept(1)), "FixedIntercept(1.0)")
 })
