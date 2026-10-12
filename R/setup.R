@@ -45,12 +45,9 @@ cidm_setup_julia <- function(verbose = TRUE) {
     return(invisible(TRUE))
   }
   project <- .julia_project()
-  version <- juliabridge::manifest_julia_version(project)
-  if (!is.null(version) && !nzchar(Sys.getenv("JULIACONNECTOR_JULIABIN"))) {
-    bin <- juliabridge::juliaup_julia(version, verbose)
-    if (!is.null(bin)) Sys.setenv(JULIACONNECTOR_JULIABIN = bin)
-  }
 
+  # `julia_ready()` matches the Manifest's Julia version itself, installing it
+  # with juliaup where a binary has not been chosen already.
   juliabridge::julia_ready(
     packages = c("ComposableTuringIDModels", "Distributions",
                  "composableIDModelR"),
