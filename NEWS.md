@@ -35,7 +35,9 @@
   source moved there so that other packages can build Julia calls the same
   way. The role of a component is given as `.role`, leaving every Julia
   keyword name free; components carry classes such as `julia_latent` and
-  `julia_model`; and one prints as `<julia model spec>`.
+  `julia_model`; and one prints as `<julia model spec>`. A component built
+  without a role is accepted wherever one is expected, since the role is what
+  the caller says the component is.
 
 ## New features
 

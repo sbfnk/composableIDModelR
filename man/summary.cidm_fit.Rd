@@ -23,6 +23,6 @@ Other inference:
 \code{\link{nuts}()},
 \code{\link{plot.cidm_fit}()},
 \code{\link{predict.cidm_fit}()},
-\code{\link{simulate.julia_model}()}
+\code{\link{simulate.julia_spec}()}
 }
 \concept{inference}

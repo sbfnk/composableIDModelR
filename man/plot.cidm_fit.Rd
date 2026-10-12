@@ -37,7 +37,7 @@ Other inference:
 \code{\link{fit}()},
 \code{\link{nuts}()},
 \code{\link{predict.cidm_fit}()},
-\code{\link{simulate.julia_model}()},
+\code{\link{simulate.julia_spec}()},
 \code{\link{summary.cidm_fit}()}
 }
 \concept{inference}

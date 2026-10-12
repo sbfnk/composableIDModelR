@@ -20,14 +20,22 @@ test_that("fit() validates inputs before starting Julia", {
 })
 
 test_that("simulate() takes a model given as Julia code, but not a part", {
-  # Dispatch reaches the method for every `julia()` role, so the role is
+  # Dispatch reaches the method for every specification, so the role is
   # checked before Julia starts.
   expect_error(
     simulate(julia("Normal(0, 1)", .role = "distribution"), n = 10),
     "composed model"
   )
-  # A component has no method at all, so dispatch still rejects it
-  expect_error(simulate(RandomWalk(), n = 10), "applicable method")
+  expect_error(simulate(RandomWalk(), n = 10), "composed model")
+})
+
+test_that("a model specification with no role is simulated like any other", {
+  # `fit()` accepts a specification with no role, so `simulate()` has to reach
+  # it rather than turn it away on dispatch.
+  untyped <- julia_spec("IDModel", DirectInfections(), PoissonError())
+  expect_identical(class(untyped), "julia_spec")
+  local_mocked_bindings(.bridge = function(...) stop("bridge reached"))
+  expect_error(simulate(untyped, n = 10), "bridge reached")
 })
 
 test_that(".trajectory_bands summarises draws and drops empty time points", {
