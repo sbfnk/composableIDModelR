@@ -26,6 +26,10 @@
 * `epiaware_call()` has been replaced by `component()` and `julia()`.
 * `plot(type = "posterior")` has been removed; use bayesplot on
   `posterior::as_draws_array(fit)` instead.
+* The Julia setup dependency is now
+  [juliabridge](https://github.com/epiforecasts/juliabridge), which juliaready
+  was renamed to. An install from GitHub picks it up through `Remotes`; an
+  existing checkout needs the dependency reinstalled.
 
 ## New features
 

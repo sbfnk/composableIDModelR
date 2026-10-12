@@ -104,7 +104,7 @@ cidm_setup_julia <- function(verbose = TRUE) {
     if (!is.null(bin)) Sys.setenv(JULIACONNECTOR_JULIABIN = bin)
   }
 
-  juliaready::julia_ready(
+  juliabridge::julia_ready(
     packages = c("ComposableTuringIDModels", "Distributions",
                  "composableIDModelR"),
     state_env = .cidm_env,
@@ -135,7 +135,7 @@ cidm_available <- function() {
     return(FALSE)
   }
   running <- tryCatch(
-    isTRUE(juliaready::eval_julia("isdefined(Main, :composableIDModelR)")),
+    isTRUE(juliabridge::eval_julia("isdefined(Main, :composableIDModelR)")),
     error = function(e) FALSE
   )
   if (!running) {
@@ -161,13 +161,13 @@ cidm_available <- function() {
   .cidm_env$released <- NULL
   for (fit in released) {
     try(
-      juliaready::call_julia(
+      juliabridge::call_julia(
         "composableIDModelR.release!", fit$handle, fit$session
       ),
       silent = TRUE
     )
   }
-  juliaready::call_julia(paste0("composableIDModelR.", fn), ...)
+  juliabridge::call_julia(paste0("composableIDModelR.", fn), ...)
 }
 
 #' Keep a Julia-side object alive while an R object refers to it

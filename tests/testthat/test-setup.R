@@ -56,7 +56,7 @@ test_that("a Julia process that has gone away clears the setup flag", {
   # clear for the next call to set it up again.
   local_mocked_bindings(
     eval_julia = function(...) stop("Julia has gone away"),
-    .package = "juliaready"
+    .package = "juliabridge"
   )
   .cidm_env$ready <- TRUE
   expect_false(cidm_available())
