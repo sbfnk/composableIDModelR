@@ -20,6 +20,21 @@ test_that("a fit loaded from disk says so rather than blaming Julia", {
   expect_identical(dim(predict(reloaded)), c(2L, 2L))
 })
 
+test_that("a fit says its Julia session has gone before setting Julia up", {
+  fitted <- structure(
+    list(
+      generated = list(predicted_y_t = matrix(1:4, nrow = 2)),
+      julia = list(handle = 1L, session = "session-token",
+                   owner = .cidm_env, setup = .cidm_env$setup)
+    ),
+    class = "cidm_fit"
+  )
+  # A session that has gone leaves its token behind, so the handle still looks
+  # owned. Without the probe this costs a full setup before Julia refuses.
+  local_mocked_bindings(cidm_available = function() FALSE)
+  expect_error(predict(fitted, horizon = 2), "has gone")
+})
+
 test_that("a Julia process that has gone away clears the setup flag", {
   was_ready <- .cidm_env$ready
   withr::defer(.cidm_env$ready <- was_ready)

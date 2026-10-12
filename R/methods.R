@@ -65,12 +65,16 @@ predict.cidm_fit <- function(object, horizon = 0, seed = NULL, ...) {
   if (horizon == 0) {
     return(in_sample)
   }
-  if (!juliabridge::julia_handle_owned(object$julia, .cidm_env)) {
+  # The handle names an object in the Julia session that created it. Ownership
+  # answers for a fit that arrived by saving and reloading without touching
+  # Julia; whether the session is still there has to be asked, because its
+  # token only changes once Julia has been set up again.
+  if (!juliabridge::julia_handle_owned(object$julia, .cidm_env) ||
+        !cidm_available()) {
     stop(
-      "This fit was loaded from disk, or fitted in a Julia session that has ",
-      "since been replaced, and forecasting needs the session it was fitted ",
-      "in. Refit the model to forecast from it; the draws and generated ",
-      "quantities it holds are still usable.",
+      "This fit was loaded from disk, or the Julia session it was fitted in ",
+      "has gone. Forecasting needs that session; refit the model to forecast ",
+      "from it. The draws and generated quantities it holds are still usable.",
       call. = FALSE
     )
   }

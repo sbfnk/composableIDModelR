@@ -55,6 +55,11 @@
 * `plot()` gains `type = "infections"`, `type = "latent"` and a `horizon`
   argument for forecasts.
 
+## Bug fixes
+
+* Forecasting from a fit whose Julia session has gone says so, rather than
+  setting Julia up again and then failing inside Julia.
+
 # EpiAwareR 0.2.0
 
 ## New Features
