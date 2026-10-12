@@ -25,6 +25,11 @@ test_that("latent models accept distributions, lists and latent models", {
     as_julia(DiffLatentModel(AR(), init = Normal(0, 1))),
     "DiffLatentModel(; model = AR(), init = [Normal(0.0, 1.0)])"
   )
+  # One initial value per difference, whether or not it carries a role
+  expect_identical(
+    as_julia(DiffLatentModel(AR(), init = julia_spec("Beta", 1, 1))),
+    "DiffLatentModel(; model = AR(), init = [Beta(1.0, 1.0)])"
+  )
   expect_identical(as_julia(FixedIntercept(1)), "FixedIntercept(1.0)")
 })
 
