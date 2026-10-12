@@ -35,16 +35,17 @@ test_that("a fit says its Julia session has gone before setting Julia up", {
   expect_error(predict(fitted, horizon = 2), "has gone")
 })
 
-test_that("a Julia process that has gone away clears the setup flag", {
-  was_ready <- .cidm_env$ready
-  withr::defer(.cidm_env$ready <- was_ready)
-  # Julia was set up and has since died, so the probe fails and the flag must
-  # clear for the next call to set it up again.
+test_that("cidm_available() asks whether the Julia package is loaded", {
+  # juliabridge decides whether the session is usable and clears the flag when
+  # it is not; what belongs here is the question it is asked.
+  asked <- NULL
   local_mocked_bindings(
-    juliaEval = function(...) stop("Julia has gone away"),
-    .package = "JuliaConnectoR"
+    julia_alive = function(state_env, probe = NULL) {
+      asked <<- probe
+      FALSE
+    },
+    .package = "juliabridge"
   )
-  .cidm_env$ready <- TRUE
   expect_false(cidm_available())
-  expect_false(isTRUE(.cidm_env$ready))
+  expect_identical(asked, "isdefined(Main, :composableIDModelR)")
 })
