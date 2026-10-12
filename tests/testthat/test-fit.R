@@ -56,6 +56,13 @@ test_that(".with_rt adds Rt only for renewal models with the default link", {
   expect_identical(.with_rt(gen, renewal)$Rt, matrix(1, 1, 2))
   expect_null(.with_rt(gen, direct)$Rt)
   expect_null(.with_rt(gen, linked)$Rt)
+  # A hand-written model may pass both models as keywords, leaving nothing
+  # positional to read. This runs after sampling, so it must not error.
+  keywords <- julia_spec(
+    "IDModel", infection = DirectInfections(), observation = PoissonError(),
+    .role = "model"
+  )
+  expect_null(.with_rt(gen, keywords)$Rt)
 })
 
 test_that("fit() rejects stratified observations", {

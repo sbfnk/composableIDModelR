@@ -251,7 +251,9 @@ simulate.julia_spec <- function(object, nsim = 1, seed = NULL, n, ...) {
 #'   as Julia code has no components to read, so it gets none.
 #' @keywords internal
 .with_rt <- function(generated, model) {
-  if (inherits(model, "julia_code")) {
+  # `IDModel()` passes both models positionally, so a specification with no
+  # positional arguments was written by hand and says nothing about infections.
+  if (inherits(model, "julia_code") || length(model$args) == 0) {
     return(generated)
   }
   infection <- model$args[[1]]
