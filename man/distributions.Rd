@@ -19,7 +19,7 @@ truncated(dist, lower = -Inf, upper = Inf)
 a side unbounded.}
 }
 \value{
-A component of class \code{cidm_distribution}.
+A component of class \code{julia_distribution}.
 }
 \description{
 Distributions are specified with
@@ -58,10 +58,7 @@ LogNormal(meanlog = Normal(1.6, 0.2), sdlog = 0.4, max = 15)
 \seealso{
 Other components: 
 \code{\link{IDModel}()},
-\code{\link{as_julia}()},
-\code{\link{component}()},
 \code{\link{infection-models}},
-\code{\link{julia}()},
 \code{\link{latent-models}},
 \code{\link{observation-models}}
 }

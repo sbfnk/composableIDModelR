@@ -8,7 +8,7 @@
 #' @param observation An observation model, e.g. from
 #'   [NegativeBinomialError()].
 #'
-#' @return An object of class `cidm_model`.
+#' @return An object of class `julia_model`.
 #'
 #' @family components
 #' @examples
@@ -28,5 +28,5 @@
 IDModel <- function(infection, observation) { # nolint: object_name_linter.
   .assert_role(infection, "infection")
   .assert_role(observation, "observation")
-  component("IDModel", infection, observation, role = "model")
+  julia_spec("IDModel", infection, observation, .role = "model")
 }

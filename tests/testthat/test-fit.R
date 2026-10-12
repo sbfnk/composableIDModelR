@@ -23,7 +23,7 @@ test_that("simulate() takes a model given as Julia code, but not a part", {
   # Dispatch reaches the method for every `julia()` role, so the role is
   # checked before Julia starts.
   expect_error(
-    simulate(julia("Normal(0, 1)", role = "distribution"), n = 10),
+    simulate(julia("Normal(0, 1)", .role = "distribution"), n = 10),
     "composed model"
   )
   # A component has no method at all, so dispatch still rejects it

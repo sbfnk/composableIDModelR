@@ -26,7 +26,7 @@
 #'   distribution, taken from the distribution's `max` when it has one.
 #' @param delta_d Numeric. Discretisation interval width.
 #'
-#' @return An object of class `cidm_infection`.
+#' @return An object of class `julia_infection`.
 #'
 #' @family components
 #' @name infection-models
@@ -52,14 +52,14 @@ Renewal <- function(generation_time, rt = NULL, initialisation = NULL,
                    max_name = "D_gen")
   rt <- .as_prior_slot(rt)
   initialisation <- .as_prior_slot(initialisation)
-  .assert_role(transformation, "julia", null_ok = TRUE)
+  .assert_role(transformation, "code", null_ok = TRUE)
   args <- list(
     generation_time = gen$dist, rt = rt,
     initialisation = initialisation, transformation = transformation,
     D_gen = if (!is.null(gen$max_delay)) as.numeric(gen$max_delay)
   )
   args[["\u0394d"]] <- if (!is.null(gen$delta_d)) as.numeric(gen$delta_d)
-  do.call(component, c("Renewal", args, role = "infection"))
+  do.call(julia_spec, c("Renewal", args, .role = "infection"))
 }
 
 #' @rdname infection-models
@@ -68,10 +68,10 @@ DirectInfections <- function(Z = NULL, initialisation = NULL,
                              transformation = NULL) {
   Z <- .as_prior_slot(Z)
   initialisation <- .as_prior_slot(initialisation)
-  .assert_role(transformation, "julia", null_ok = TRUE)
-  component(
+  .assert_role(transformation, "code", null_ok = TRUE)
+  julia_spec(
     "DirectInfections", Z = Z, initialisation = initialisation,
-    transformation = transformation, role = "infection"
+    transformation = transformation, .role = "infection"
   )
 }
 
@@ -81,10 +81,10 @@ ExpGrowthRate <- function(rt = NULL, initialisation = NULL,
                           transformation = NULL) {
   rt <- .as_prior_slot(rt)
   initialisation <- .as_prior_slot(initialisation)
-  .assert_role(transformation, "julia", null_ok = TRUE)
-  component(
+  .assert_role(transformation, "code", null_ok = TRUE)
+  julia_spec(
     "ExpGrowthRate", rt = rt, initialisation = initialisation,
-    transformation = transformation, role = "infection"
+    transformation = transformation, .role = "infection"
   )
 }
 

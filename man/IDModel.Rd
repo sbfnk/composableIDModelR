@@ -13,7 +13,7 @@ IDModel(infection, observation)
 \code{\link[=NegativeBinomialError]{NegativeBinomialError()}}.}
 }
 \value{
-An object of class \code{cidm_model}.
+An object of class \code{julia_model}.
 }
 \description{
 Joins an infection model, which carries its own latent process, to an
@@ -36,11 +36,8 @@ cat(as_julia(model))
 }
 \seealso{
 Other components: 
-\code{\link{as_julia}()},
-\code{\link{component}()},
 \code{\link{distributions}},
 \code{\link{infection-models}},
-\code{\link{julia}()},
 \code{\link{latent-models}},
 \code{\link{observation-models}}
 }

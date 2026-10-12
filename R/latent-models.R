@@ -48,7 +48,7 @@
 #' @param std Prior for the standard deviation.
 #' @param model A latent model for the differenced process.
 #'
-#' @return An object of class `cidm_latent`.
+#' @return An object of class `julia_latent`.
 #'
 #' @family components
 #' @name latent-models
@@ -74,7 +74,7 @@ AR <- function(damp = NULL, init = NULL, epsilon_t = NULL) {
   epsilon_t <- .as_prior_slot(epsilon_t)
   args <- list(damp = damp, init = init)
   args[[.epsilon_t]] <- epsilon_t
-  do.call(component, c("AR", args, role = "latent"))
+  do.call(julia_spec, c("AR", args, .role = "latent"))
 }
 
 #' @rdname latent-models
@@ -85,7 +85,7 @@ MA <- function(theta = NULL, epsilon_t = NULL) {
   args <- list()
   args[["\u03b8"]] <- theta
   args[[.epsilon_t]] <- epsilon_t
-  do.call(component, c("MA", args, role = "latent"))
+  do.call(julia_spec, c("MA", args, .role = "latent"))
 }
 
 #' @rdname latent-models
@@ -95,28 +95,28 @@ RandomWalk <- function(init = NULL, epsilon_t = NULL) {
   epsilon_t <- .as_prior_slot(epsilon_t)
   args <- list(init = init)
   args[[.epsilon_t]] <- epsilon_t
-  do.call(component, c("RandomWalk", args, role = "latent"))
+  do.call(julia_spec, c("RandomWalk", args, .role = "latent"))
 }
 
 #' @rdname latent-models
 #' @export
 IID <- function(dist = Normal(0, 1)) {
   dist <- .as_prior(dist)
-  component("IID", dist, role = "latent")
+  julia_spec("IID", dist, .role = "latent")
 }
 
 #' @rdname latent-models
 #' @export
 Intercept <- function(dist) {
   dist <- .as_prior(dist)
-  component("Intercept", dist, role = "latent")
+  julia_spec("Intercept", dist, .role = "latent")
 }
 
 #' @rdname latent-models
 #' @export
 FixedIntercept <- function(value) {
   checkmate::assert_number(value, finite = TRUE)
-  component("FixedIntercept", as.numeric(value), role = "latent")
+  julia_spec("FixedIntercept", as.numeric(value), .role = "latent")
 }
 
 #' @rdname latent-models
@@ -127,7 +127,7 @@ HierarchicalNormal <- function(mean = NULL, std = NULL) {
     mean <- as.numeric(mean)
   }
   std <- .as_prior_slot(std)
-  component("HierarchicalNormal", mean = mean, std = std, role = "latent")
+  julia_spec("HierarchicalNormal", mean = mean, std = std, .role = "latent")
 }
 
 #' @rdname latent-models
@@ -135,8 +135,8 @@ HierarchicalNormal <- function(mean = NULL, std = NULL) {
 DiffLatentModel <- function(model, init = NULL) {
   model <- .as_prior_slot(model)
   init <- .as_prior_slot(init)
-  if (inherits(init, "cidm_distribution")) init <- list(init)
-  component("DiffLatentModel", model = model, init = init, role = "latent")
+  if (inherits(init, "julia_distribution")) init <- list(init)
+  julia_spec("DiffLatentModel", model = model, init = init, .role = "latent")
 }
 
 # nolint end

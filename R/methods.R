@@ -2,7 +2,7 @@
 print.cidm_fit <- function(x, ...) {
   cat("<composableIDModelR fit>\n")
   cat("Model:\n")
-  cat(paste0("  ", .format_code(x$model, width = 76L)), sep = "\n")
+  cat(paste0("  ", format(x$model, width = 76L)), sep = "\n")
   cat("\nData:", length(x$y), "time points\n")
   cat("Sampling:", x$method$chains, "chains of", x$method$draws,
       "draws after", x$method$warmup, "warmup\n")
@@ -65,11 +65,12 @@ predict.cidm_fit <- function(object, horizon = 0, seed = NULL, ...) {
   if (horizon == 0) {
     return(in_sample)
   }
-  if (!identical(object$julia$owner, .cidm_env)) {
+  if (!juliabridge::julia_handle_owned(object$julia, .cidm_env)) {
     stop(
-      "This fit was loaded from disk, and forecasting needs the Julia ",
-      "session it was fitted in. Refit the model to forecast from it; the ",
-      "draws and generated quantities it holds are still usable.",
+      "This fit was loaded from disk, or fitted in a Julia session that has ",
+      "since been replaced, and forecasting needs the session it was fitted ",
+      "in. Refit the model to forecast from it; the draws and generated ",
+      "quantities it holds are still usable.",
       call. = FALSE
     )
   }

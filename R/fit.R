@@ -154,7 +154,9 @@ fit <- function(model, y, method = nuts(), dates = NULL, seed = NULL) {
       y = y,
       dates = dates,
       method = method,
-      julia = .julia_handle(result$handle, result$session)
+      julia = juliabridge::julia_handle(
+        result$handle, result$session, .cidm_env
+      )
     ),
     class = "cidm_fit"
   )
@@ -190,7 +192,7 @@ fit <- function(model, y, method = nuts(), dates = NULL, seed = NULL) {
 #' }
 #' @importFrom stats simulate
 #' @export
-simulate.cidm_model <- function(object, nsim = 1, seed = NULL, n, ...) {
+simulate.julia_model <- function(object, nsim = 1, seed = NULL, n, ...) {
   # An untyped `julia()` expression dispatches here too, as do typed ones of
   # every role, so the role is checked rather than left to dispatch.
   .assert_role(object, "model")
@@ -204,9 +206,9 @@ simulate.cidm_model <- function(object, nsim = 1, seed = NULL, n, ...) {
   .with_rt(.generated_list(result), object)
 }
 
-#' @rdname simulate.cidm_model
+#' @rdname simulate.julia_model
 #' @export
-simulate.cidm_julia <- simulate.cidm_model
+simulate.julia_code <- simulate.julia_model
 
 #' Convert bridge output to a draws_df
 #'
@@ -253,7 +255,7 @@ simulate.cidm_julia <- simulate.cidm_model
 #'   as Julia code has no components to read, so it gets none.
 #' @keywords internal
 .with_rt <- function(generated, model) {
-  if (inherits(model, "cidm_julia")) {
+  if (inherits(model, "julia_code")) {
     return(generated)
   }
   infection <- model$args[[1]]

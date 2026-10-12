@@ -172,19 +172,22 @@ IDModel(
 
 ## Components without an R wrapper
 
-`component()` constructs any Julia component by name, and `julia()` inserts
+`julia_spec()` constructs any Julia component by name, and `julia()` inserts
 Julia code verbatim, for example a function argument.
 Positional R arguments become positional Julia arguments and named ones become
 keyword arguments.
+`.role` says what the component is, so that it is only accepted where it
+belongs: `"distribution"`, `"latent"`, `"infection"`, `"observation"` or
+`"model"`.
 
 ```{r escape_hatch}
 IDModel(
   DirectInfections(
-    Z = component("HilbertSpaceGP", role = "latent"),
+    Z = julia_spec("HilbertSpaceGP", .role = "latent"),
     initialisation = Normal(log(100), 1)
   ),
-  LatentDelay(PoissonError(), delay = component("Frechet", 3, 2,
-                                                role = "distribution"))
+  LatentDelay(PoissonError(), delay = julia_spec("Frechet", 3, 2,
+                                                 .role = "distribution"))
 )
 ```
 

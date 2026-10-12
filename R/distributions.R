@@ -30,7 +30,7 @@
 #' @param lower,upper Numeric truncation bounds. Use `-Inf` or `Inf` to leave
 #'   a side unbounded.
 #'
-#' @return A component of class `cidm_distribution`.
+#' @return A component of class `julia_distribution`.
 #'
 #' @family components
 #' @name distributions
@@ -50,7 +50,7 @@ NULL
 # nolint start: object_name_linter.
 HalfNormal <- function(mean = 1) {
   checkmate::assert_number(mean, lower = 0, finite = TRUE)
-  component("HalfNormal", as.numeric(mean), role = "distribution")
+  julia_spec("HalfNormal", as.numeric(mean), .role = "distribution")
 }
 # nolint end
 
@@ -63,8 +63,8 @@ truncated <- function(dist, lower = -Inf, upper = Inf) {
   if (lower >= upper) {
     stop("`lower` must be less than `upper`.", call. = FALSE)
   }
-  component("truncated", dist, as.numeric(lower), as.numeric(upper),
-            role = "distribution")
+  julia_spec("truncated", dist, as.numeric(lower), as.numeric(upper),
+             .role = "distribution")
 }
 
 #' @importFrom distspec Normal
