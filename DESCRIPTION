@@ -18,7 +18,7 @@ Imports:
     checkmate,
     distspec (>= 0.2.0),
     ggplot2,
-    juliabridge,
+    juliabridge (>= 0.1.0),
     posterior,
     rlang,
     stats
