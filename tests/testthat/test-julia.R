@@ -69,7 +69,7 @@ test_that("fit() recovers draws, generated quantities and forecasts", {
   stale <- fitted
   stale$julia <- list(
     handle = fitted$julia$handle, session = "other-session",
-    owner = fitted$julia$owner
+    owner = fitted$julia$owner, setup = fitted$julia$setup
   )
   expect_error(predict(stale, horizon = 2), "no longer available")
 

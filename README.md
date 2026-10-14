@@ -79,7 +79,7 @@ delayed <- IDModel(
 )
 ```
 
-`component()` calls any Julia constructor that has no R wrapper, and
+`julia_spec()` calls any Julia constructor that has no R wrapper, and
 `julia()` inserts other Julia code, such as a function, verbatim.
 
 ## Contributing

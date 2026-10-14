@@ -2,38 +2,9 @@ test_that(".julia_project finds the bundled Julia project", {
   project <- .julia_project()
   expect_true(file.exists(file.path(project, "Project.toml")))
   expect_true(file.exists(file.path(project, "Manifest.toml")))
-})
-
-test_that(".manifest_julia_version reads the version from the Manifest", {
-  expect_match(.manifest_julia_version(), "^[0-9]+\\.[0-9]+$")
-  expect_null(.manifest_julia_version(tempdir()))
-})
-
-test_that("a handle belongs to the session that created it", {
-  handle <- .julia_handle(7L, "session-token")
-  expect_identical(handle$handle, 7L)
-  expect_true(identical(handle$owner, .cidm_env))
-
-  # Saving copies the environment by value, so a reloaded fit does not own
-  # the Julia object and must not be taken for the original.
-  file <- withr::local_tempfile()
-  saveRDS(handle, file)
-  expect_false(identical(readRDS(file)$owner, .cidm_env))
-})
-
-test_that("only the owning session queues a handle for release", {
-  .cidm_env$released <- NULL
-  local({
-    owned <- .julia_handle(11L, "session-token")
-    foreign <- .julia_handle(12L, "session-token")
-    foreign$owner <- new.env()
-    NULL
-  })
-  gc()
-  queued <- vapply(.cidm_env$released, function(x) x$handle, integer(1))
-  expect_true(11L %in% queued)
-  expect_false(12L %in% queued)
-  .cidm_env$released <- NULL
+  expect_match(
+    juliabridge::manifest_julia_version(project), "^[0-9]+\\.[0-9]+$"
+  )
 })
 
 test_that("a fit loaded from disk says so rather than blaming Julia", {
@@ -49,16 +20,32 @@ test_that("a fit loaded from disk says so rather than blaming Julia", {
   expect_identical(dim(predict(reloaded)), c(2L, 2L))
 })
 
-test_that("a Julia process that has gone away clears the setup flag", {
-  was_ready <- .cidm_env$ready
-  withr::defer(.cidm_env$ready <- was_ready)
-  # Julia was set up and has since died, so the probe fails and the flag must
-  # clear for the next call to set it up again.
-  local_mocked_bindings(
-    eval_julia = function(...) stop("Julia has gone away"),
-    .package = "juliaready"
+test_that("a fit says its Julia session has gone before setting Julia up", {
+  fitted <- structure(
+    list(
+      generated = list(predicted_y_t = matrix(1:4, nrow = 2)),
+      julia = list(handle = 1L, session = "session-token",
+                   owner = .cidm_env, setup = .cidm_env$setup)
+    ),
+    class = "cidm_fit"
   )
-  .cidm_env$ready <- TRUE
+  # A session that has gone leaves its token behind, so the handle still looks
+  # owned. Without the probe this costs a full setup before Julia refuses.
+  local_mocked_bindings(cidm_available = function() FALSE)
+  expect_error(predict(fitted, horizon = 2), "has gone")
+})
+
+test_that("cidm_available() asks whether the Julia package is loaded", {
+  # juliabridge decides whether the session is usable and clears the flag when
+  # it is not; what belongs here is the question it is asked.
+  asked <- NULL
+  local_mocked_bindings(
+    julia_alive = function(state_env, probe = NULL) {
+      asked <<- probe
+      FALSE
+    },
+    .package = "juliabridge"
+  )
   expect_false(cidm_available())
-  expect_false(isTRUE(.cidm_env$ready))
+  expect_identical(asked, "isdefined(Main, :composableIDModelR)")
 })

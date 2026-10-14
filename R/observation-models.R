@@ -26,7 +26,7 @@
 #' @param latent_model Ascertainment on the log scale: a distribution for a
 #'   constant ascertainment or a latent model for a time-varying one.
 #'
-#' @return An object of class `cidm_observation`.
+#' @return An object of class `julia_observation`.
 #'
 #' @family components
 #' @name observation-models
@@ -46,16 +46,16 @@ NULL
 #' @rdname observation-models
 #' @export
 PoissonError <- function() {
-  component("PoissonError", role = "observation")
+  julia_spec("PoissonError", .role = "observation")
 }
 
 #' @rdname observation-models
 #' @export
 NegativeBinomialError <- function(cluster_factor = NULL) {
   cluster_factor <- .as_prior_slot(cluster_factor)
-  component(
+  julia_spec(
     "NegativeBinomialError", cluster_factor = cluster_factor,
-    role = "observation"
+    .role = "observation"
   )
 }
 
@@ -63,7 +63,7 @@ NegativeBinomialError <- function(cluster_factor = NULL) {
 #' @export
 NormalError <- function(std = NULL) {
   std <- .as_prior_slot(std)
-  component("NormalError", std = std, role = "observation")
+  julia_spec("NormalError", std = std, .role = "observation")
 }
 
 #' @rdname observation-models
@@ -77,7 +77,7 @@ LatentDelay <- function(model, delay, D = NULL, delta_d = NULL) {
   args <- list(model, delay$dist,
                D = if (!is.null(max_delay)) as.numeric(max_delay))
   args[["\u0394d"]] <- if (!is.null(delay$delta_d)) as.numeric(delay$delta_d)
-  do.call(component, c("LatentDelay", args, role = "observation"))
+  do.call(julia_spec, c("LatentDelay", args, .role = "observation"))
 }
 
 #' @rdname observation-models
@@ -86,12 +86,12 @@ Ascertainment <- function(model, latent_model) {
   .assert_role(model, "observation")
   if (is.null(latent_model) ||
         (is.list(latent_model) &&
-           !inherits(latent_model, c("cidm_component", "dist_spec")))) {
+           !inherits(latent_model, c("julia_spec", "dist_spec")))) {
     stop("`latent_model` must be a distribution or a latent model.",
          call. = FALSE)
   }
   latent_model <- .as_prior_slot(latent_model)
-  component("Ascertainment", model, latent_model, role = "observation")
+  julia_spec("Ascertainment", model, latent_model, .role = "observation")
 }
 
 # nolint end

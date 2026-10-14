@@ -1,5 +1,5 @@
 test_that("distributions validate their parameters", {
-  expect_s3_class(HalfNormal(0.1), "cidm_distribution")
+  expect_s3_class(HalfNormal(0.1), "julia_distribution")
   expect_error(HalfNormal(-1))
   expect_error(Gamma(shape = -1, rate = 1))
   expect_error(truncated(Normal(0, 1), 1, 0), "less than")
@@ -15,9 +15,9 @@ test_that("latent models accept distributions, lists and latent models", {
     damp = list(Normal(0.8, 0.05), Normal(0.1, 0.05)),
     init = Normal(0, 1)
   )
-  expect_s3_class(ar2, "cidm_latent")
+  expect_s3_class(ar2, "julia_latent")
   expect_match(as_julia(ar2), "damp = \\[Normal\\(0.8, 0.05\\), ")
-  expect_s3_class(AR(damp = RandomWalk()), "cidm_latent")
+  expect_s3_class(AR(damp = RandomWalk()), "julia_latent")
   expect_error(AR(damp = 0.5), "distribution")
   expect_error(AR(damp = list(Normal(0, 1), 1)), "damp\\[\\[2\\]\\]")
   expect_match(as_julia(MA(theta = Normal(0, 1))), "\u03b8 = Normal")
@@ -25,12 +25,23 @@ test_that("latent models accept distributions, lists and latent models", {
     as_julia(DiffLatentModel(AR(), init = Normal(0, 1))),
     "DiffLatentModel(; model = AR(), init = [Normal(0.0, 1.0)])"
   )
+  # Julia takes a single prior as one difference, and refuses one inside a
+  # vector, so an `init` that is already a whole slot is left as written
+  expect_identical(
+    as_julia(DiffLatentModel(AR(), init = RandomWalk())),
+    "DiffLatentModel(; model = AR(), init = RandomWalk())"
+  )
+  vector <- julia("[Normal(0, 1), Normal(0, 1)]")
+  expect_identical(
+    as_julia(DiffLatentModel(AR(), init = vector)),
+    "DiffLatentModel(; model = AR(), init = [Normal(0, 1), Normal(0, 1)])"
+  )
   expect_identical(as_julia(FixedIntercept(1)), "FixedIntercept(1.0)")
 })
 
 test_that("infection models check their arguments", {
   renewal <- Renewal(generation_time = c(0.25, 0.75), rt = RandomWalk())
-  expect_s3_class(renewal, "cidm_infection")
+  expect_s3_class(renewal, "julia_infection")
   expect_match(as_julia(renewal), "generation_time = \\[0.25, 0.75\\]")
   expect_match(as_julia(Renewal(generation_time = 1)), "\\[1.0\\]")
   expect_error(Renewal(generation_time = c(0.5, 0.2)), "sum to one")
@@ -39,8 +50,8 @@ test_that("infection models check their arguments", {
     as_julia(Renewal(Gamma(shape = 2, rate = 1), delta_d = 0.5), ascii = TRUE),
     "Symbol\\(\"\\\\u0394d\"\\) => 0.5"
   )
-  expect_s3_class(DirectInfections(Z = RandomWalk()), "cidm_infection")
-  expect_s3_class(ExpGrowthRate(rt = AR()), "cidm_infection")
+  expect_s3_class(DirectInfections(Z = RandomWalk()), "julia_infection")
+  expect_s3_class(ExpGrowthRate(rt = AR()), "julia_infection")
   expect_error(
     DirectInfections(transformation = Normal(0, 1)),
     "Julia code from `julia\\(\\)`"
@@ -65,12 +76,12 @@ test_that("observation models wrap other observation models", {
     Ascertainment(PoissonError(), list(Normal(-1, 0.1), Normal(0, 1))),
     "distribution or a latent model"
   )
-  expect_s3_class(NormalError(std = HalfNormal()), "cidm_observation")
+  expect_s3_class(NormalError(std = HalfNormal()), "julia_observation")
 })
 
 test_that("IDModel composes an infection and an observation model", {
   model <- IDModel(DirectInfections(Z = RandomWalk()), PoissonError())
-  expect_s3_class(model, "cidm_model")
+  expect_s3_class(model, "julia_model")
   expect_identical(
     as_julia(model),
     "IDModel(DirectInfections(; Z = RandomWalk()), PoissonError())"
@@ -79,12 +90,16 @@ test_that("IDModel composes an infection and an observation model", {
   expect_error(IDModel(DirectInfections(), Normal(0, 1)), "observation model")
 })
 
-test_that("component() is the escape hatch for unwrapped constructors", {
-  gp <- component("HilbertSpaceGP", role = "latent")
+test_that("julia_spec() is the escape hatch for unwrapped constructors", {
+  gp <- julia_spec("HilbertSpaceGP", .role = "latent")
   expect_s3_class(
-    Renewal(Gamma(shape = 2, rate = 1), rt = gp), "cidm_infection"
+    Renewal(Gamma(shape = 2, rate = 1), rt = gp), "julia_infection"
   )
-  expect_error(component("bad name", role = "latent"))
-  expect_error(component("F"), "role")
-  expect_error(component("F", role = "nonsense"))
+  expect_error(julia_spec("bad name", .role = "latent"))
+  # A role is whatever the calling package means by it, so one the package
+  # does not use is caught where the specification is used.
+  expect_error(
+    Renewal(Gamma(shape = 2, rate = 1), rt = julia_spec("G", .role = "prior")),
+    "latent model"
+  )
 })

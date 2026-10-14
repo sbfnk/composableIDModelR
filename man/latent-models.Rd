@@ -54,7 +54,7 @@ distributions (one per lag or difference).}
 \item{model}{A latent model for the differenced process.}
 }
 \value{
-An object of class \code{cidm_latent}.
+An object of class \code{julia_latent}.
 }
 \description{
 Models for the latent paths that drive infection models, such as the log
@@ -96,11 +96,8 @@ RandomWalk(init = Normal(0, 0.25))
 \seealso{
 Other components: 
 \code{\link{IDModel}()},
-\code{\link{as_julia}()},
-\code{\link{component}()},
 \code{\link{distributions}},
 \code{\link{infection-models}},
-\code{\link{julia}()},
 \code{\link{observation-models}}
 }
 \concept{components}

@@ -36,7 +36,7 @@
 #'
 #' @param x A distspec distribution or a composableIDModelR component.
 #' @param arg_name Name used in error messages.
-#' @return A component of class `cidm_distribution`.
+#' @return A component of class `julia_distribution`.
 #' @keywords internal
 .as_prior <- function(x, arg_name = deparse(substitute(x))) {
   if (!inherits(x, "dist_spec")) {
@@ -56,19 +56,19 @@
   if (!distribution %in% names(.julia_distributions)) {
     stop(
       "`", arg_name, "` is a ", distribution, " distribution, which cannot be ",
-      "used as a prior. Use a parametric distribution, or `component()` for a ",
-      "Distributions.jl distribution with no distspec equivalent.",
+      "used as a prior. Use a parametric distribution, or `julia_spec()` ",
+      "for a Distributions.jl distribution with no distspec equivalent.",
       call. = FALSE
     )
   }
   spec <- .julia_distributions[[distribution]]
   args <- lapply(spec$args(distspec::get_parameters(x)), as.numeric)
   prior <- do.call(
-    component, c(spec$fn, args, role = "distribution")
+    julia_spec, c(spec$fn, args, .role = "distribution")
   )
   max <- .dist_max(x)
   if (is.finite(max)) {
-    prior <- component("truncated", prior, -Inf, max, role = "distribution")
+    prior <- julia_spec("truncated", prior, -Inf, max, .role = "distribution")
   }
   prior
 }
@@ -191,9 +191,9 @@
   priors <- lapply(names(parameters), function(name) {
     prior <- .as_prior(parameters[[name]], arg_name)
     if (is.finite(bounds[[name]])) {
-      prior <- component(
+      prior <- julia_spec(
         "truncated", prior, as.numeric(bounds[[name]]), Inf,
-        role = "distribution"
+        .role = "distribution"
       )
     }
     prior
@@ -202,7 +202,9 @@
                unname(priors), D = as.numeric(max_delay))
   args[["\u0394d"]] <- if (!is.null(delta_d)) as.numeric(delta_d)
   list(
-    dist = do.call(component, c("UncertainDelay", args, role = "distribution")),
+    dist = do.call(
+      julia_spec, c("UncertainDelay", args, .role = "distribution")
+    ),
     max_delay = NULL, delta_d = NULL
   )
 }
@@ -260,7 +262,7 @@
   if (is.null(x)) {
     return(NULL)
   }
-  if (is.list(x) && !inherits(x, c("cidm_component", "dist_spec"))) {
+  if (is.list(x) && !inherits(x, c("julia_spec", "dist_spec"))) {
     return(lapply(seq_along(x), function(i) {
       .as_prior(x[[i]], paste0(arg_name, "[[", i, "]]"))
     }))

@@ -43,7 +43,7 @@ taken from the distribution's \code{max} when it has one.}
 constant ascertainment or a latent model for a time-varying one.}
 }
 \value{
-An object of class \code{cidm_observation}.
+An object of class \code{julia_observation}.
 }
 \description{
 Models linking expected observations to data. Error models
@@ -67,11 +67,8 @@ Ascertainment(PoissonError(), latent_model = FixedIntercept(log(0.1)))
 \seealso{
 Other components: 
 \code{\link{IDModel}()},
-\code{\link{as_julia}()},
-\code{\link{component}()},
 \code{\link{distributions}},
 \code{\link{infection-models}},
-\code{\link{julia}()},
 \code{\link{latent-models}}
 }
 \concept{components}

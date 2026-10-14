@@ -15,59 +15,6 @@
   project
 }
 
-#' Julia version the bundled Manifest was resolved with
-#'
-#' @param project Path to the bundled Julia project.
-#' @return Character string with the major and minor version (e.g. `"1.12"`),
-#'   or `NULL` if it cannot be read.
-#' @keywords internal
-.manifest_julia_version <- function(project = .julia_project()) {
-  manifest <- file.path(project, "Manifest.toml")
-  if (!file.exists(manifest)) {
-    return(NULL)
-  }
-  line <- grep("^julia_version", readLines(manifest, warn = FALSE),
-               value = TRUE)
-  version <- regmatches(line, regexpr("[0-9]+\\.[0-9]+", line))
-  if (length(version) == 0) NULL else version
-}
-
-#' Install a Julia version with juliaup
-#'
-#' @param version Character string with the Julia version (e.g. `"1.12"`).
-#' @param verbose Logical. If `TRUE`, prints progress messages.
-#' @return Path to the Julia executable, or `NULL` if juliaup is unavailable
-#'   or the installation failed.
-#' @keywords internal
-.juliaup_julia <- function(version, verbose = TRUE) {
-  if (!nzchar(Sys.which("juliaup"))) {
-    if (verbose) {
-      message(
-        "juliaup not found, using the Julia on the PATH. Install juliaup ",
-        "from https://github.com/JuliaLang/juliaup to match Julia ", version,
-        "."
-      )
-    }
-    return(NULL)
-  }
-  status <- tryCatch(
-    system2("juliaup", c("add", version), stdout = FALSE, stderr = FALSE),
-    error = function(e) 1L
-  )
-  if (!identical(as.integer(status), 0L)) {
-    return(NULL)
-  }
-  julia_dirs <- list.dirs(
-    file.path(path.expand("~"), ".julia", "juliaup"), recursive = FALSE
-  )
-  matching <- julia_dirs[startsWith(basename(julia_dirs),
-                                    paste0("julia-", version, "."))]
-  exe <- if (.Platform$OS.type == "windows") "julia.exe" else "julia"
-  bins <- file.path(sort(matching, decreasing = TRUE), "bin", exe)
-  bins <- bins[file.exists(bins)]
-  if (length(bins) == 0) NULL else bins[1]
-}
-
 #' Set up Julia for composableIDModelR
 #'
 #' Installs the pinned Julia dependencies of composableIDModelR
@@ -98,13 +45,10 @@ cidm_setup_julia <- function(verbose = TRUE) {
     return(invisible(TRUE))
   }
   project <- .julia_project()
-  version <- .manifest_julia_version(project)
-  if (!is.null(version) && !nzchar(Sys.getenv("JULIACONNECTOR_JULIABIN"))) {
-    bin <- .juliaup_julia(version, verbose)
-    if (!is.null(bin)) Sys.setenv(JULIACONNECTOR_JULIABIN = bin)
-  }
 
-  juliaready::julia_ready(
+  # `julia_ready()` matches the Manifest's Julia version itself, installing it
+  # with juliaup where a binary has not been chosen already.
+  juliabridge::julia_ready(
     packages = c("ComposableTuringIDModels", "Distributions",
                  "composableIDModelR"),
     state_env = .cidm_env,
@@ -118,31 +62,16 @@ cidm_setup_julia <- function(verbose = TRUE) {
 
 #' Check whether the Julia backend is running
 #'
-#' A Julia process that has gone away leaves the setup flag behind, so
-#' clearing it here lets the next call set Julia up again rather than fail on
-#' a session that no longer holds the bridge. Recovery works where
-#' JuliaConnectoR has dropped the connection itself, after
-#' [JuliaConnectoR::stopJulia()] or an interrupt; a process killed from
-#' outside leaves a stale connection that `stopJulia()` clears.
-#'
-#' @return Logical. `TRUE` if Julia has been set up in this R session.
+#' @return Logical. `TRUE` if Julia has been set up in this R session and the
+#'   session still holds the Julia package.
 #'
 #' @examples
 #' cidm_available()
 #' @export
 cidm_available <- function() {
-  if (!isTRUE(.cidm_env$ready)) {
-    return(FALSE)
-  }
-  running <- tryCatch(
-    isTRUE(juliaready::eval_julia("isdefined(Main, :composableIDModelR)")),
-    error = function(e) FALSE
+  juliabridge::julia_alive(
+    .cidm_env, "isdefined(Main, :composableIDModelR)"
   )
-  if (!running) {
-    # The same environment is kept, because handle ownership is its identity.
-    .cidm_env$ready <- FALSE
-  }
-  running
 }
 
 #' Call a bridge function, starting Julia if needed
@@ -157,46 +86,8 @@ cidm_available <- function() {
 #' @keywords internal
 .bridge <- function(fn, ...) {
   if (!cidm_available()) cidm_setup_julia(verbose = FALSE)
-  released <- .cidm_env$released
-  .cidm_env$released <- NULL
-  for (fit in released) {
-    try(
-      juliaready::call_julia(
-        "composableIDModelR.release!", fit$handle, fit$session
-      ),
-      silent = TRUE
-    )
-  }
-  juliaready::call_julia(paste0("composableIDModelR.", fn), ...)
-}
-
-#' Keep a Julia-side object alive while an R object refers to it
-#'
-#' The session token travels with the handle because handles are numbered
-#' from the same base in every Julia session, so one from an earlier session
-#' would otherwise name whichever fit now holds that number.
-#'
-#' Saving a fit copies the environment by value but not its finaliser, so a
-#' reloaded fit names a Julia object it does not own. Recording this session's
-#' state environment tells the two apart, because a copy of it is no longer
-#' the same object.
-#'
-#' @param handle Integer handle returned by the bridge.
-#' @param session Character token identifying the Julia session.
-#' @return An environment holding the handle, released when collected.
-#' @keywords internal
-.julia_handle <- function(handle, session) {
-  env <- new.env(parent = emptyenv())
-  env$handle <- handle
-  env$session <- session
-  env$owner <- .cidm_env
-  reg.finalizer(env, function(e) {
-    if (!identical(e$owner, .cidm_env)) {
-      return(invisible(NULL))
-    }
-    .cidm_env$released <- c(
-      .cidm_env$released, list(list(handle = e$handle, session = e$session))
-    )
-  })
-  env
+  juliabridge::julia_release_pending(
+    .cidm_env, "composableIDModelR.release!"
+  )
+  juliabridge::call_julia(paste0("composableIDModelR.", fn), ...)
 }
