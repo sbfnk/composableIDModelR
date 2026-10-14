@@ -7,15 +7,11 @@
 cidm_available()
 }
 \value{
-Logical. \code{TRUE} if Julia has been set up in this R session.
+Logical. \code{TRUE} if Julia has been set up in this R session and the
+session still holds the Julia package.
 }
 \description{
-A Julia process that has gone away leaves the setup flag behind, so
-clearing it here lets the next call set Julia up again rather than fail on
-a session that no longer holds the bridge. Recovery works where
-JuliaConnectoR has dropped the connection itself, after
-\code{\link[JuliaConnectoR:stopJulia]{JuliaConnectoR::stopJulia()}} or an interrupt; a process killed from
-outside leaves a stale connection that \code{stopJulia()} clears.
+Check whether the Julia backend is running
 }
 \examples{
 cidm_available()

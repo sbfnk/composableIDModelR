@@ -23,13 +23,21 @@
 * `fit(model, y, method = nuts())` takes a numeric vector of observations and
   replaces `nuts_sampler()` with `nuts()`. Pathfinder initialisation has been
   removed.
-* `epiaware_call()` has been replaced by `component()` and `julia()`.
+* `epiaware_call()` has been replaced by `julia_spec()` and `julia()`.
 * `plot(type = "posterior")` has been removed; use bayesplot on
   `posterior::as_draws_array(fit)` instead.
 * The Julia setup dependency is now
   [juliabridge](https://github.com/epiforecasts/juliabridge), which juliaready
   was renamed to. An install from GitHub picks it up through `Remotes`; an
   existing checkout needs the dependency reinstalled.
+* `julia_spec()`, `julia()` and `as_julia()` come from juliabridge, which
+  composableIDModelR re-exports. The code that renders a component to Julia
+  source moved there so that other packages can build Julia calls the same
+  way. The role of a component is given as `.role`, leaving every Julia
+  keyword name free; components carry classes such as `julia_latent` and
+  `julia_model`; and one prints as `<julia model spec>`. A component built
+  without a role is accepted wherever one is expected, since the role is what
+  the caller says the component is.
 
 ## New features
 
@@ -46,6 +54,11 @@
 * `predict()` returns posterior predictive draws and forecasts.
 * `plot()` gains `type = "infections"`, `type = "latent"` and a `horizon`
   argument for forecasts.
+
+## Bug fixes
+
+* Forecasting from a fit whose Julia session has gone says so, rather than
+  setting Julia up again and then failing inside Julia.
 
 # EpiAwareR 0.2.0
 

@@ -50,7 +50,7 @@ Other inference:
 \code{\link{fit}()},
 \code{\link{plot.cidm_fit}()},
 \code{\link{predict.cidm_fit}()},
-\code{\link{simulate.cidm_model}()},
+\code{\link{simulate.julia_spec}()},
 \code{\link{summary.cidm_fit}()}
 }
 \concept{inference}

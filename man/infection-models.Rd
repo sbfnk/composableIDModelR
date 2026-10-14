@@ -45,7 +45,7 @@ distribution, taken from the distribution's \code{max} when it has one.}
 \item{Z}{Latent model for log infections.}
 }
 \value{
-An object of class \code{cidm_infection}.
+An object of class \code{julia_infection}.
 }
 \description{
 Models for the unobserved infection process. Each carries its own latent
@@ -67,10 +67,7 @@ DirectInfections(Z = RandomWalk(), initialisation = Normal(log(100), 1))
 \seealso{
 Other components: 
 \code{\link{IDModel}()},
-\code{\link{as_julia}()},
-\code{\link{component}()},
 \code{\link{distributions}},
-\code{\link{julia}()},
 \code{\link{latent-models}},
 \code{\link{observation-models}}
 }

@@ -23,7 +23,6 @@ Imports:
     rlang,
     stats
 Suggests:
-    withr,
     knitr,
     rmarkdown,
     testthat (>= 3.2.0)

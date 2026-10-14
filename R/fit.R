@@ -154,7 +154,9 @@ fit <- function(model, y, method = nuts(), dates = NULL, seed = NULL) {
       y = y,
       dates = dates,
       method = method,
-      julia = .julia_handle(result$handle, result$session)
+      julia = juliabridge::julia_handle(
+        result$handle, result$session, .cidm_env
+      )
     ),
     class = "cidm_fit"
   )
@@ -190,9 +192,9 @@ fit <- function(model, y, method = nuts(), dates = NULL, seed = NULL) {
 #' }
 #' @importFrom stats simulate
 #' @export
-simulate.cidm_model <- function(object, nsim = 1, seed = NULL, n, ...) {
-  # An untyped `julia()` expression dispatches here too, as do typed ones of
-  # every role, so the role is checked rather than left to dispatch.
+simulate.julia_spec <- function(object, nsim = 1, seed = NULL, n, ...) {
+  # Every specification dispatches here, whatever role it carries and whether
+  # it carries one, so the role is checked here rather than left to dispatch.
   .assert_role(object, "model")
   checkmate::assert_count(nsim, positive = TRUE)
   checkmate::assert_count(n, positive = TRUE)
@@ -203,10 +205,6 @@ simulate.cidm_model <- function(object, nsim = 1, seed = NULL, n, ...) {
   )
   .with_rt(.generated_list(result), object)
 }
-
-#' @rdname simulate.cidm_model
-#' @export
-simulate.cidm_julia <- simulate.cidm_model
 
 #' Convert bridge output to a draws_df
 #'
@@ -253,7 +251,9 @@ simulate.cidm_julia <- simulate.cidm_model
 #'   as Julia code has no components to read, so it gets none.
 #' @keywords internal
 .with_rt <- function(generated, model) {
-  if (inherits(model, "cidm_julia")) {
+  # `IDModel()` passes both models positionally, so a specification with no
+  # positional arguments was written by hand and says nothing about infections.
+  if (inherits(model, "julia_code") || length(model$args) == 0) {
     return(generated)
   }
   infection <- model$args[[1]]
