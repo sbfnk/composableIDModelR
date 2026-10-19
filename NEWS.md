@@ -1,4 +1,4 @@
-# composableIDModelR (development version)
+# composableIDModelR 0.3.0
 
 ## Breaking changes
 
@@ -30,6 +30,9 @@
   [juliabridge](https://github.com/epiforecasts/juliabridge), which juliaready
   was renamed to. An install from GitHub picks it up through `Remotes`; an
   existing checkout needs the dependency reinstalled.
+* composableIDModelR needs R 4.1.0 or later, up from 4.0.0, and Julia 1.12 or
+  later, up from 1.9. `cidm_setup_julia()` installs a matching Julia through
+  juliaup; a Julia installed by hand needs upgrading separately.
 * `julia_spec()`, `julia()` and `as_julia()` come from juliabridge, which
   composableIDModelR re-exports. The code that renders a component to Julia
   source moved there so that other packages can build Julia calls the same
